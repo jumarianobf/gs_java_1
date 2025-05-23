@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${dentista.dentistaId} != null ? #{dentistas.title.edit} : #{dentistas.title.new})}">
+    <title th:text="${dentista.dentistaId} != null ? #{dentistas.title.edit} : #{dentistas.title.new}">Dentista</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+</head>
+<body>
+<!-- Sidebar -->
+<div th:replace="~{fragments/sidebar :: sidebar('dentistas')}"></div>
+
+<div class="container animate-fadeIn">
+    <!-- Seletor de idioma -->
+
+    <!-- Cabeçalho -->
+    <div class="header text-center mb-4">
+        <div class="brand-icon hover-scale">
+            <i class="fas fa-tooth text-white fa-lg"></i>
+        </div>
+        <h1 class="gradient-title" th:text="#{dentistas.appname}">OdontoPrev</h1>
+        <p class="subtitle" th:text="#{dentistas.subtitle}">Sistema de Gerenciamento de Dentistas</p>
+    </div>
+
+    <div class="d-flex justify-content-end align-items-center mb-4" style="gap:0.5rem;">
+        <form method="get" action="" class="d-flex align-items-center" style="gap:0.5rem;">
+            <i class="fas fa-globe-americas me-2 text-primary" style="font-size:1.25rem;"></i>
+            <select name="lang"
+                    class="form-select form-select-sm w-auto"
+                    onchange="this.form.submit()"
+                    aria-label="#{global.selectLanguage}">
+                <option value="pt" th:selected="${#locale.language == 'pt'}">Português</option>
+                <option value="en" th:selected="${#locale.language == 'en'}">English</option>
+            </select>
+        </form>
+    </div>
+
+
+    <!-- Card Formulário -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"
+                th:text="${dentista.dentistaId} != null ? #{dentistas.title.edit} : #{dentistas.title.new}">
+                Cadastrar/Editar Dentista
+            </h5>
+        </div>
+        <div class="card-body">
+            <form th:action="@{${dentista.dentistaId} == null ? '/dentistas/salvar' : '/dentistas/atualizar/' + dentista.dentistaId}"
+                  th:object="${dentista}"
+                  method="post"
+                  class="needs-validation"
+                  novalidate>
+
+                <div class="row g-4">
+                    <!-- Nome -->
+                    <div class="col-md-6 mb-3">
+                        <label for="nomeDentista" class="form-label">
+                            <span th:text="#{dentistas.nome}">Nome</span> <span class="text-danger">*</span>
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-user-md"></i></span>
+                            <input type="text"
+                                   id="nomeDentista"
+                                   class="form-control"
+                                   th:field="*{nomeDentista}"
+                                   th:placeholder="#{dentistas.nome.placeholder}"
+                                   required>
+                        </div>
+                        <div class="invalid-feedback" th:text="#{dentistas.nome.error}">
+                            Por favor, informe o nome do dentista.
+                        </div>
+                    </div>
+
+                    <!-- Especialidade -->
+                    <div class="col-md-6 mb-3">
+                        <label for="especialidade" class="form-label" th:text="#{dentistas.especialidade}">Especialidade</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-certificate"></i></span>
+                            <input type="text"
+                                   id="especialidade"
+                                   class="form-control"
+                                   th:field="*{especialidade}"
+                                   th:placeholder="#{dentistas.especialidade.placeholder}">
+                        </div>
+                    </div>
+
+                    <!-- Telefone -->
+                    <div class="col-md-6 mb-3">
+                        <label for="telefoneDentista" class="form-label" th:text="#{dentistas.telefone}">Telefone</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                            <input type="text"
+                                   id="telefoneDentista"
+                                   class="form-control"
+                                   th:field="*{telefoneDentista}"
+                                   th:placeholder="#{dentistas.telefone.placeholder}">
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="col-md-6 mb-3">
+                        <label for="emailDentista" class="form-label" th:text="#{dentistas.email}">Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                            <input type="email"
+                                   id="emailDentista"
+                                   class="form-control"
+                                   th:field="*{emailDentista}"
+                                   th:placeholder="#{dentistas.email.placeholder}"
+                                   required>
+                        </div>
+                        <div class="invalid-feedback" th:text="#{dentistas.email.error}">
+                            Por favor, informe um email válido.
+                        </div>
+                    </div>
+
+                    <!-- Clínica -->
+                    <div class="col-md-6 mb-3">
+                        <label for="clinica" class="form-label" th:text="#{dentistas.clinica}">Clínica</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-clinic-medical"></i></span>
+                            <select id="clinica"
+                                    class="form-select"
+                                    th:field="*{clinica.clinicaId}"
+                                    required>
+                                <option value="" th:text="#{dentistas.clinica.placeholder}">Selecione a clínica</option>
+                                <option th:each="c : ${clinicas}"
+                                        th:value="${c.clinicaId}"
+                                        th:text="${c.nomeClinica}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="invalid-feedback" th:text="#{dentistas.clinica.error}">
+                            Por favor, selecione a clínica.
+                        </div>
+                    </div>
+
+                    <!-- Usuário (opcional) -->
+                    <div class="col-md-12 mb-3" th:if="${usuarios != null}">
+                        <label for="usuario" class="form-label" th:text="#{dentistas.usuario}">Associar a um Usuário (opcional)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-link"></i></span>
+                            <select id="usuario"
+                                    class="form-select"
+                                    th:field="*{usuario.usuarioId}">
+                                <option value="" th:text="#{dentistas.usuario.placeholder}">Selecione um usuário (opcional)</option>
+                                <option th:each="u : ${usuarios}"
+                                        th:value="${u.usuarioId}"
+                                        th:text="${u.nome + ' ' + u.sobrenome}">
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botões -->
+                <div class="d-flex justify-content-end gap-2 mt-4">
+                    <a href="/dentistas" class="btn btn-outline-primary icon-btn">
+                        <i class="fas fa-arrow-left"></i>
+                        <span th:text="#{dentistas.voltar}">Voltar</span>
+                    </a>
+                    <button type="submit" class="btn btn-primary icon-btn">
+                        <i class="fas fa-save"></i>
+                        <span th:text="#{dentistas.salvar}">Salvar</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+<script>
+    (function() {
+        'use strict';
+        // Validação Bootstrap
+        var forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function(form) {
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                form.classList.add('was-validated');
+            }, false);
+        });
+        // Máscara de telefone
+        $(document).ready(function() {
+            $('#telefoneDentista').mask('(00) 00000-0000');
+        });
+    })();
+</script>
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${previsao.previsaoUsuarioId} != null ? #{previsoes.title.edit} : #{previsoes.title.new})}">
+    <title th:text="${previsao.previsaoUsuarioId} != null ? #{previsoes.title.edit} : #{previsoes.title.new}">Cadastrar/Editar Previsão</title>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+</head>
+<body>
+<!-- Sidebar -->
+<div th:replace="~{fragments/sidebar :: sidebar('previsao')}"></div>
+
+<div class="content-with-sidebar">
+    <div class="container-fluid py-4">
+        <!-- Success alert -->
+        <div th:if="${mensagem}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <span th:text="${mensagem}">Sucesso!</span>
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    th:attr="aria-label=#{global.close}"></button>
+        </div>
+        <!-- Error alert -->
+        <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <span th:text="${erro}">Erro!</span>
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert"
+                    th:attr="aria-label=#{global.close}"></button>
+        </div>
+
+        <!-- Header -->
+        <div class="header text-center mb-4">
+            <div class="icon-circle">
+                <i class="fas fa-chart-line text-white fa-lg"></i>
+            </div>
+            <h1 class="gradient-title" th:text="#{previsoes.appname}">OdontoPrev</h1>
+            <p class="text-muted" th:text="#{previsoes.subtitle}">Sistema de Previsão de Usuários</p>
+        </div>
+
+        <div class="d-flex justify-content-end align-items-center mb-4" style="gap: 0.5rem;">
+            <form method="get" action="" class="d-flex align-items-center" style="gap: 0.5rem;">
+                <i class="fas fa-globe-americas me-2 text-primary" style="font-size: 1.25rem;"></i>
+                <select name="lang" class="form-select form-select-sm w-auto" onchange="this.form.submit()" aria-label="#{selecionar_idioma}">
+                    <option value="pt" th:selected="${#locale.language == 'pt'}">Português</option>
+                    <option value="en" th:selected="${#locale.language == 'en'}">English</option>
+                </select>
+            </form>
+        </div>
+
+        <!-- Card -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"
+                    th:text="${previsao.previsaoUsuarioId} == null ? #{previsoes.title.new} : #{previsoes.title.edit}">
+                    Cadastrar Nova Previsão
+                </h5>
+            </div>
+            <div class="card-body">
+                <form th:action="@{${previsao.previsaoUsuarioId} == null ? '/previsao-usuarios/salvar' : '/previsao-usuarios/atualizar/' + previsao.previsaoUsuarioId}"
+                      th:object="${previsao}"
+                      method="post"
+                      class="needs-validation"
+                      novalidate>
+
+                    <div class="row g-4">
+                        <!-- Usuário -->
+                        <div class="col-md-6 mb-3">
+                            <label for="usuarioId" class="form-label">
+                                <span th:text="#{previsoes.usuario}">Usuário</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                <select id="usuarioId"
+                                        class="form-select"
+                                        th:field="*{usuario.usuarioId}"
+                                        required>
+                                    <option value="" th:text="#{previsoes.usuario.placeholder}">Selecione um usuário</option>
+                                    <option th:each="u : ${usuarios}"
+                                            th:value="${u.usuarioId}"
+                                            th:text="${u.nome}"
+                                            th:selected="${u.usuarioId == previsao.usuario?.usuarioId}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="invalid-feedback" th:text="#{previsoes.usuario.error}">
+                                Por favor, informe o usuário.
+                            </div>
+                        </div>
+
+                        <!-- Imagem do Usuário -->
+                        <div class="col-md-6 mb-3">
+                            <label for="imagemUsuarioId" class="form-label">
+                                <span th:text="#{previsoes.imagem}">Imagem do Usuário</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-image"></i></span>
+                                <select id="imagemUsuarioId"
+                                        class="form-select"
+                                        th:field="*{imagemUsuario.imagemUsuarioId}"
+                                        onchange="exibirImagem(event)"
+                                        required>
+                                    <option value="" th:text="#{previsoes.imagem.placeholder}">Selecione uma imagem</option>
+                                    <option th:each="img : ${imagens}"
+                                            th:value="${img.imagemUsuarioId}"
+                                            th:text="${img.imagemUrl}"
+                                            th:selected="${img.imagemUsuarioId == previsao.imagemUsuario?.imagemUsuarioId}">
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="invalid-feedback" th:text="#{previsoes.imagem.error}">
+                                Por favor, informe a imagem do usuário.
+                            </div>
+                        </div>
+
+                        <!-- Pré-visualização -->
+                        <div class="col-12 mb-3" th:if="${previsao.imagemUsuario?.imagemUsuarioId != null}">
+                            <p><strong th:text="#{previsoes.imagem.selected}">Imagem Selecionada:</strong></p>
+                            <img id="imagemPreview"
+                                 th:src="@{${previsao.imagemUsuario.imagemUrl}}"
+                                 alt="Imagem do Usuário"
+                                 width="100"/>
+                        </div>
+
+                        <!-- Texto da Previsão -->
+                        <div class="col-12 mb-3">
+                            <label for="previsaoTexto" class="form-label">
+                                <span th:text="#{previsoes.previsaoTexto}">Texto da Previsão</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <textarea id="previsaoTexto"
+                                      class="form-control"
+                                      th:field="*{previsaoTexto}"
+                                      rows="3"
+                                      th:placeholder="#{previsoes.previsaoTexto.placeholder}"
+                                      required></textarea>
+                            <div class="invalid-feedback" th:text="#{previsoes.previsaoTexto.error}">
+                                Por favor, informe o texto da previsão.
+                            </div>
+                        </div>
+
+                        <!-- Probabilidade -->
+                        <div class="col-md-6 mb-3">
+                            <label for="probabilidade" class="form-label">
+                                <span th:text="#{previsoes.probabilidade}">Probabilidade</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="number"
+                                   id="probabilidade"
+                                   class="form-control"
+                                   th:field="*{probabilidade}"
+                                   min="0" max="100" step="0.01"
+                                   th:placeholder="#{previsoes.probabilidade.placeholder}"
+                                   required/>
+                            <div class="invalid-feedback" th:text="#{previsoes.probabilidade.error}">
+                                Por favor, informe a probabilidade.
+                            </div>
+                        </div>
+
+                        <!-- Recomendação -->
+                        <div class="col-md-6 mb-3">
+                            <label for="recomendacao" class="form-label">
+                                <span th:text="#{previsoes.recomendacao}">Recomendação</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="text"
+                                   id="recomendacao"
+                                   class="form-control"
+                                   th:field="*{recomendacao}"
+                                   th:placeholder="#{previsoes.recomendacao.placeholder}"
+                                   required/>
+                            <div class="invalid-feedback" th:text="#{previsoes.recomendacao.error}">
+                                Por favor, informe a recomendação.
+                            </div>
+                        </div>
+
+                        <!-- Data da Previsão -->
+                        <div class="col-md-6 mb-3">
+                            <label for="dataPrevisao" class="form-label">
+                                <span th:text="#{previsoes.data}">Data da Previsão</span>
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input type="date"
+                                   id="dataPrevisao"
+                                   class="form-control"
+                                   th:field="*{dataPrevisao}"
+                                   required/>
+                            <div class="invalid-feedback" th:text="#{previsoes.data.error}">
+                                Por favor, informe a data da previsão.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a href="/previsao-usuarios" class="btn btn-outline-primary icon-btn">
+                            <i class="fas fa-arrow-left"></i>
+                            <span th:text="#{previsoes.button.back}">Voltar para a lista de Previsões</span>
+                        </a>
+                        <button type="submit" class="btn btn-primary icon-btn">
+                            <i class="fas fa-save"></i>
+                            <span th:text="#{previsoes.button.save}">Salvar</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+<script>
+    function exibirImagem(event) {
+        var imgId = event.target.value;
+        var preview = document.getElementById('imagemPreview');
+        preview.src = '/imagens/' + imgId;
+        preview.style.display = 'block';
+    }
+    (function(){
+        'use strict';
+        var forms = document.querySelectorAll('.needs-validation');
+        Array.prototype.slice.call(forms).forEach(function(f){
+            f.addEventListener('submit', function(e){
+                if(!f.checkValidity()){
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+                f.classList.add('was-validated');
+            }, false);
+        });
+    })();
+</script>
+</body>
+</html>

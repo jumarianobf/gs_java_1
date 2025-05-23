@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(#{atendimentos.cadastrar})}">
+    <title>Cadastrar/Editar Atendimento - OdontoPrev</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+<div th:replace="~{fragments/sidebar :: sidebar('atendimentos')}"></div>
+
+<div class="content-with-sidebar">
+    <div class="container-fluid py-4">
+        <!-- Cabeçalho da Página -->
+        <div class="header">
+            <div class="icon-circle">
+                <i class="fas fa-calendar-check text-white fa-lg"></i>
+            </div>
+            <h1 class="gradient-title" th:text="#{app.title}">OdontoPrev</h1>
+            <p class="text-muted" th:if="${atendimento.atendimentoId == null}" th:text="#{atendimentos.cadastrar}">Cadastrar Atendimento</p>
+            <p class="text-muted" th:unless="${atendimento.atendimentoId == null}" th:text="#{atendimentos.editar}">Editar Atendimento</p>
+        </div>
+
+        <div class="d-flex justify-content-end align-items-center mb-4" style="gap: 0.5rem;">
+            <form method="get" action="" class="d-flex align-items-center" style="gap: 0.5rem;">
+                <i class="fas fa-globe-americas me-2 text-primary" style="font-size: 1.25rem;"></i>
+                <select name="lang" class="form-select form-select-sm w-auto" onchange="this.form.submit()" aria-label="#{selecionar_idioma}">
+                    <option value="pt" th:selected="${#locale.language == 'pt'}">Português</option>
+                    <option value="en" th:selected="${#locale.language == 'en'}">English</option>
+                </select>
+            </form>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0" th:if="${atendimento.atendimentoId == null}" th:text="#{atendimentos.cadastrar_novo}">Cadastrar Novo Atendimento</h5>
+                <h5 class="mb-0" th:unless="${atendimento.atendimentoId == null}" th:text="#{atendimentos.editar}">Editar Atendimento</h5>
+            </div>
+
+            <div class="card-body">
+                <form th:action="@{${atendimento.atendimentoId == null ? '/atendimentos/salvar' : '/atendimentos/atualizar'}}"
+                      th:object="${atendimento}" method="post" class="needs-validation" novalidate>
+
+                    <input type="hidden" th:field="*{atendimentoId}" />
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="usuario" class="form-label" th:text="#{atendimentos.paciente}">Paciente</label>
+                            <select class="form-select" id="usuario" th:field="*{usuario}" required>
+                                <option value="" th:text="#{atendimentos.selecione_paciente}">Selecione o paciente</option>
+                                <option th:each="usuario : ${usuarios}" th:value="${usuario.usuarioId}" th:text="${usuario.nome + ' ' + usuario.sobrenome}"></option>
+                            </select>
+                            <div class="invalid-feedback" th:text="#{atendimentos.erro_paciente}">
+                                Por favor, selecione o paciente.
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="dentista" class="form-label" th:text="#{atendimentos.dentista}">Dentista</label>
+                            <select class="form-select" id="dentista" th:field="*{dentista}" required>
+                                <option value="" th:text="#{atendimentos.selecione_dentista}">Selecione o dentista</option>
+                                <option th:each="dentista : ${dentistas}" th:value="${dentista.dentistaId}" th:text="${dentista.nomeDentista}"></option>
+                            </select>
+                            <div class="invalid-feedback" th:text="#{atendimentos.erro_dentista}">
+                                Por favor, selecione o dentista.
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label for="clinica" class="form-label" th:text="#{atendimentos.clinica}">Clínica</label>
+                            <select class="form-select" id="clinica" th:field="*{clinica}" required>
+                                <option value="" th:text="#{atendimentos.selecione_clinica}">Selecione a clínica</option>
+                                <option th:each="clinica : ${clinicas}" th:value="${clinica.clinicaId}" th:text="${clinica.nomeClinica}"></option>
+                            </select>
+                            <div class="invalid-feedback" th:text="#{atendimentos.erro_clinica}">
+                                Por favor, selecione a clínica.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="dataAtendimento" class="form-label" th:text="#{atendimentos.data}">Data do Atendimento</label>
+                            <input type="date" class="form-control" id="dataAtendimento" th:field="*{dataAtendimento}" required>
+                            <div class="invalid-feedback" th:text="#{atendimentos.erro_data}">
+                                Por favor, informe a data do atendimento.
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="custo" class="form-label" th:text="#{atendimentos.custo}">Custo (R$)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">R$</span>
+                                <input type="number" class="form-control" id="custo" th:field="*{custo}" step="0.01" min="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <label for="procedimento" class="form-label" th:text="#{atendimentos.procedimento}">Descrição do Procedimento</label>
+                            <textarea class="form-control" id="procedimento" rows="4" th:field="*{descricaoProcedimento}"
+                                      th:placeholder="#{atendimentos.descricao_procedimento}"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="/atendimentos" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-1"></i> <span th:text="#{atendimentos.voltar}">Voltar</span>
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i> <span th:text="#{atendimentos.salvar}">Salvar</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<th:block th:replace="~{fragments/layout :: scripts}"></th:block>
+
+<!-- Validação de formulário -->
+<script>
+    // Inicializa a validação de formulário do Bootstrap
+    (function() {
+        'use strict'
+
+        // Fetch all the forms we want to apply custom Bootstrap validation styles to
+        const forms = document.querySelectorAll('.needs-validation')
+
+        // Loop over them and prevent submission
+        Array.from(forms).forEach(form => {
+            form.addEventListener('submit', event => {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })()
+</script>
+</body>
+</html>
